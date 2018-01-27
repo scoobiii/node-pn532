@@ -25,7 +25,8 @@ class FrameEmitter extends EventEmitter {
         // console.dir(hal);
         this.hal.on('data', (data) => {
             logger.debug('Data received', util.inspect(data));
-            this.buffer = Buffer.concat([this.buffer, data]);
+            //this.buffer = Buffer.concat([this.buffer, data]);
+            this.buffer = data;
             this._processBuffer();
         });
 

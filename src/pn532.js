@@ -34,7 +34,9 @@ class PN532 extends EventEmitter {
 
         this.frameEmitter = new FrameEmitter(this.hal);
         this.hal.init().then(() => {
-            this.configureSecureAccessModule().then(() => this.emit('ready'));
+            this.configureSecureAccessModule().then(() => {
+                this.emit('ready')
+            });
         });
 
         this.on('newListener', (event) => {
@@ -63,7 +65,7 @@ class PN532 extends EventEmitter {
 
             // Wire up listening to wait for response (or error) from PN532
             var onFrame = (frame) => {
-                logger.debug('Response received for sendCommand', util.inspect(frame));
+                logger.debug('RRR Response received for sendCommand', util.inspect(frame));
                 // TODO: If no ACK after 15ms, resend? (page 40 of user guide, UART only)?
 
                 if (frame instanceof AckFrame) {
@@ -155,9 +157,9 @@ class PN532 extends EventEmitter {
                     var uidLength = body[5];
 
                     var uid = body.slice(6, 6 + uidLength)
-                                  .toString('hex')
-                                  .match(/.{1,2}/g)
-                                  .join(':');
+                        .toString('hex')
+                        .match(/.{1,2}/g)
+                        .join(':');
 
                     return {
                         ATQA: body.slice(2, 4), // SENS_RES
@@ -194,16 +196,15 @@ class PN532 extends EventEmitter {
                     logger.warn('The data format does not match to the specification.');
                 }
                 var block = body.slice(1, body.length - 1); // skip status byte and last byte (not part of memory)
-                // var unknown = body[body.length];
 
                 return block;
-        });
+            });
     }
 
     readNdefData() {
         logger.info('Reading data...');
 
-        return this.readBlock({blockAddress: 0x04})
+        return this.readBlock({ blockAddress: 0x04 })
             .then((block) => {
                 logger.debug('block:', util.inspect(block));
 
@@ -245,8 +246,8 @@ class PN532 extends EventEmitter {
                     if (blockNum <= additionalBlocks) {
                         var blockAddress = 4 * (blockNum + 1);
                         logger.debug('Retrieving block:', blockNum, 'at blockAddress:', blockAddress);
-                        return self.readBlock({blockAddress: blockAddress})
-                            .then(function(block) {
+                        return self.readBlock({ blockAddress: blockAddress })
+                            .then(function (block) {
                                 blockNum++;
                                 ndefData = Buffer.concat([ndefData, block]);
                                 return retrieveBlock(blockNum);
@@ -256,7 +257,7 @@ class PN532 extends EventEmitter {
 
                 return allDataPromise.then(() => ndefData.slice(0, ndefLength));
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 logger.error('ERROR:', error);
             });
     }
@@ -274,7 +275,7 @@ class PN532 extends EventEmitter {
             tagNumber,
             c.MIFARE_COMMAND_WRITE_4,
             blockAddress
-        ],  block);
+        ], block);
 
         return this.sendCommand(commandBuffer)
             .then((frame) => {
@@ -287,8 +288,6 @@ class PN532 extends EventEmitter {
                     logger.warn('The data format does not match to the specification.');
                 }
                 var block = body.slice(1, body.length - 1); // skip status byte and last byte (not part of memory)
-                // var unknown = body[body.length];
-
                 return block;
             });
     }
@@ -300,9 +299,9 @@ class PN532 extends EventEmitter {
         var block = [].concat([
             c.TAG_MEM_NDEF_TLV,
             data.length
-        ],  data, [
-            c.TAG_MEM_TERMINATOR_TLV
-        ]);
+        ], data, [
+                c.TAG_MEM_TERMINATOR_TLV
+            ]);
 
         logger.debug('block:', util.inspect(new Buffer(block)));
 
@@ -322,16 +321,13 @@ class PN532 extends EventEmitter {
 
                 logger.debug('Writing block:', blockNum, 'at blockAddress:', blockAddress);
                 logger.debug('pageData:', util.inspect(new Buffer(pageData)));
-                return self.writeBlock(pageData, {blockAddress: blockAddress})
-                .then(function(block) {
-                    blockNum++;
-                    // ndefData = Buffer.concat([ndefData, block]);
-                    return writeBlock(blockNum);
-                });
+                return self.writeBlock(pageData, { blockAddress: blockAddress })
+                    .then(function (block) {
+                        blockNum++;
+                        return writeBlock(blockNum);
+                    });
             }
         })(0);
-
-        // return allDataPromise.then(() => ndefData.slice(0, ndefLength));
         return allPromises;
     }
 
@@ -355,21 +351,13 @@ class PN532 extends EventEmitter {
         ].concat(authKey).concat(uidArray);
 
         return this.sendCommand(commandBuffer)
-        .then((frame) => {
-            var body = frame.getDataBody();
-            logger.info('Frame data from mifare classic authenticate', util.inspect(body));
+            .then((frame) => {
+                var body = frame.getDataBody();
+                logger.info('Frame data from mifare classic authenticate', util.inspect(body));
 
-            console.log('body', body);
-            return body;
-
-            // var status = body[0];
-            // var tagData = body.slice(1, body.length);
-
-            // return {
-            //     status: status.toString(16),
-            //     tagData: tagData
-            // };
-        });
+                console.log('body', body);
+                return body;
+            });
     }
 }
 
