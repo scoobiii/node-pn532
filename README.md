@@ -1,4 +1,4 @@
-# PN532
+# PN532 to PLIMM
 
 Driver for the PN532 NFC chip.  Provides an event and promise-based API, and requires either:
 - [node-serialport](https://github.com/voodootikigod/node-serialport)
